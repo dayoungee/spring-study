@@ -35,8 +35,8 @@ public class MemberApiController {
 
     }
 
-    @Data
-    @AllArgsConstructor
+    @Data // getter setter toString EqulasAndHashCode RequiredArgsConstructor 를 합쳐놓은 종합선물센트
+    @AllArgsConstructor // 모든 필드에 대한 생성자를 자동생성
     static class Result<T>{
        private T data;
     }

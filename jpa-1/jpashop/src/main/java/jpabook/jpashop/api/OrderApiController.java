@@ -1,13 +1,20 @@
 package jpabook.jpashop.api;
+import jpabook.jpashop.domain.Address;
 import jpabook.jpashop.domain.Order;
 import jpabook.jpashop.domain.OrderItem;
+import jpabook.jpashop.domain.OrderStatus;
 import jpabook.jpashop.repository.OrderRepository;
 import jpabook.jpashop.repository.OrderSearch;
+import lombok.Data;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
+
 import static java.util.stream.Collectors.*;
 /**
  * V1. 엔티티 직접 노출
@@ -48,5 +55,55 @@ public class OrderApiController {
             orderItems.stream().forEach(o -> o.getItem().getName()); //Lazy 강제초기화
         }
         return all;
+    }
+
+    @GetMapping("/api/v2/orders")
+    public List<OrderDto> ordersV2() {
+        List<Order> orders = orderRepository.findAllByString(new OrderSearch());
+        List<OrderDto> result = orders.stream()
+                .map(o -> new OrderDto(o))
+                .collect(toList());
+        return result;
+    }
+    // 일대다 페치조인이 있다면 페이징 할 수 없다. 메모리가 펑~날라감
+    // 참고; 컬렉션 페치 조인은 1개만 사용할 수 있다. 둘 이상에 패치조인을 사용하면 부정합하게 조회될 수 있음
+    @GetMapping("/api/v3/orders") // 페치 조인 방법, 다른 곳에 쓸 때는 오 괜찮았다. 그러나 엄청난 단점이 있다. 컬렉션 페치 조인을 사용하면 페이징이 불가능!
+    public List<OrderDto> ordersV3() {
+        List<Order> orders = orderRepository.findAllWithItem();
+        List<OrderDto> result = orders.stream()
+                .map(o -> new OrderDto(o))
+                .collect(toList());
+        return result;
+    }
+
+    @Data
+    static class OrderDto {
+        private Long orderId;
+        private String name;
+        private LocalDateTime orderDate; //주문시간
+        private OrderStatus orderStatus;
+        private Address address;
+        private List<OrderItemDto> orderItems;
+        public OrderDto(Order order) {
+            orderId = order.getId();
+            name = order.getMember().getName();
+            orderDate = order.getOrderDate();
+            orderStatus = order.getStatus();
+            address = order.getDelivery().getAddress();
+            orderItems = order.getOrderItems().stream()
+                    .map(orderItem -> new OrderItemDto(orderItem))
+                    .collect(toList());
+        }
+    }
+    @Data
+    static class OrderItemDto {
+        private String itemName;//상품 명
+        private int orderPrice; //주문 가격
+        private int count; //주문 수량
+        public OrderItemDto(OrderItem orderItem) {
+            itemName = orderItem.getItem().getName();
+            orderPrice = orderItem.getOrderPrice();
+            count = orderItem.getCount();
+        }
     }
 }

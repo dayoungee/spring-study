@@ -92,7 +92,21 @@ public class OrderRepository {
         return query.getResultList();
     }
 
-
+    /**
+     * JPQL은 객체지향 쿼리 언어. 테이블을 대상으로 쿼리하는것이 아니라 Entity 객체를 대상으로 쿼리한다.
+     *
+     *   "select m from Member as m where m.age > 18"
+     *  - Entity와 속성은 대소문자 구분한다 (Member, age)
+     *  - @Entity(name = "MM")일경우 MM이 Entity 이름이다.
+     *  - JPQL 키워드는 대소문자 구분하지 않음(select, from, where)
+     *  - Entity 이름 사용, Table 이름이 아님
+     *  - 별칭은 필수 (as는 생략가능)
+     *
+     *  TypeQuery : 반환 타입이 명확할 때
+     *
+     *  Query : 반환 타입이 명확하지 않을 때
+     *
+     * */
     public List<Order> findAllWithMemberDelivery() {
         return em.createQuery(
                         "select o from Order o" +
@@ -101,4 +115,16 @@ public class OrderRepository {
                 .getResultList();
     }
 
+    /**
+     * distinct : 같은 id 값이면 중복인 값을 버려줌, jpa에서만 적용. 실제 디비에서 실행하면 똑같이 동일한 오더 엔티티가 2개씩 들어옴
+     * ex) Order 엔티티 같은 아이디가 있으면 중복을 버려줌
+     * */
+    public List<Order> findAllWithItem() {
+        return em.createQuery(
+                "select distinct o from Order o" +
+                        " join fetch o.member m" +
+                        " join fetch o.delivery d"+
+                        " join fetch o.orderItems oi"+
+                        " join fetch oi.item i", Order.class).getResultList();
+    }
 }
