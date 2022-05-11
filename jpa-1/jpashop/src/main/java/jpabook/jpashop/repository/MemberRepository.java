@@ -1,42 +1,14 @@
 package jpabook.jpashop.repository;
 
 import jpabook.jpashop.domain.Member;
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.util.List;
 
-@Repository
-@RequiredArgsConstructor
-public class MemberRepository {
+public interface MemberRepository extends JpaRepository<Member, Long> {
+    // 이렇게 만 적어도 Spring JPA에서 자동으로 JPQL생성해주고, Name을 찾아줌. 굳이 구현하지 않아도댐. 인터페이스만 만들어
+    // 이것이 스프링 데이터 JPA
+    // 앵간한건 다 제공해줌.
+    public List<Member> findByName(String name);
 
-   // @PersistenceContext // 이게 있어야 인잭션을 해줌. jpa 하지만 스프링부트는
-    //@Autowired // 오토와이어드만 써도 인잭션을 해주게함 그런데 생성자하나만 있으면 어차피 인잭션 해주는 거? lombok으로 간편하게 해결
-    private final EntityManager em;
-
-/*
-    public MemberRepository(EntityManager em) {
-        this.em = em;
-    }
-*/
-
-    public void save(Member member){
-        em.persist(member);
-    }
-
-    public Member findOne(Long id){
-        return em.find(Member.class, id);
-    }
-
-    public List<Member> findAll(){
-        return em.createQuery("select m from Member m", Member.class).getResultList();
-    }
-
-    public List<Member> findByName(String name){
-        return em.createQuery("select m from Member m where m.name = :name", Member.class)
-                .setParameter("name",name).getResultList();
-    }
 }

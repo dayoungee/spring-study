@@ -4,7 +4,10 @@ build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
-/generated/
+
+##QueryDSL##
+generated/
+
 ### STS ###
 .apt_generated
 .classpath
